@@ -7,13 +7,14 @@ child skill.
 
 | Route | Skill name | Repository |
 |---|---|---|
-| paper | \`seismicx-paper-skill\` | \`https://github.com/cangyeone/seismicx-paper-skill.git\` |
-| catalog | \`seismicx-catalog\` | \`https://github.com/cangyeone/seismicx-catalog-skill.git\` |
-| fine-tuning | \`seismicx-fine-tuning\` | \`https://github.com/cangyeone/seismicx-fine-tuning-skill.git\` |
-| dataset | \`seismicx-dataset\` | \`https://github.com/cangyeone/seismicx-dataset-skill.git\` |
+| paper | `seismicx-paper-skill` | `https://github.com/cangyeone/seismicx-paper-skill.git` |
+| catalog | `seismicx-catalog` | `https://github.com/cangyeone/seismicx-catalog-skill.git` |
+| fine-tuning | `seismicx-fine-tuning` | `https://github.com/cangyeone/seismicx-fine-tuning-skill.git` |
+| dataset | `seismicx-dataset` | `https://github.com/cangyeone/seismicx-dataset-skill.git` |
 
-Repository folder names and frontmatter skill names differ for the paper and
-catalog repositories. Resolve by frontmatter \`name\`, not folder name alone.
+Repository names and frontmatter skill names differ for the catalog,
+fine-tuning, and dataset repositories; the paper repository already matches.
+Resolve and install by frontmatter `name`, not repository name alone.
 
 ## Decision rules
 

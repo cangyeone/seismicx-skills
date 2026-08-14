@@ -13,8 +13,8 @@ For every stage, record:
 5. validation gate and result;
 6. assumptions and provenance required by the next stage.
 
-Use separate work directories such as \`01-dataset\`, \`02-training\`,
-\`03-catalog\`, and \`04-paper\` when the user has not supplied a layout.
+Use separate work directories such as `01-dataset`, `02-training`,
+`03-catalog`, and `04-paper` when the user has not supplied a layout.
 Never move or rewrite the immutable source data merely to fit this structure.
 
 ## Dataset to fine-tuning
@@ -96,14 +96,14 @@ missing analyses, citations, metrics, mechanisms, or novelty.
 
 ### Raw archive to model
 
-\`dataset → fine-tuning\`
+`dataset → fine-tuning`
 
 Use dataset to standardize and validate reusable data. Use fine-tuning to build
 group-safe partitions, dry-run the real checkpoint, train, and evaluate.
 
 ### Adapted model to operational candidate catalog
 
-\`fine-tuning → catalog\`
+`fine-tuning → catalog`
 
 Train and validate first. Then test continuous inference, associate and locate
 picks, and perform catalog-level QC. Keep model metrics separate from catalog
@@ -111,14 +111,14 @@ quality metrics.
 
 ### Existing catalog to trained model
 
-\`dataset → fine-tuning\`
+`dataset → fine-tuning`
 
 Normalize catalog and phase labels, construct event windows or a documented
 adapter, validate identifiers and waveform access, then train.
 
 ### Full seismic AI study
 
-\`dataset → fine-tuning → catalog → paper\`
+`dataset → fine-tuning → catalog → paper`
 
 Build the data contract, train without leakage, test on continuous data through
 catalog production, and write only from the validated evidence bundle. Skip any
@@ -126,7 +126,7 @@ stage already satisfied by a user-provided validated artifact.
 
 ### Catalog study and manuscript revision
 
-\`catalog → paper\`
+`catalog → paper`
 
 Produce or revise the catalog, complete location/magnitude/mechanism and spatial
 sanity checks as applicable, then hand tables, figures, uncertainty, methods,

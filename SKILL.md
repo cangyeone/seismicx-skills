@@ -9,14 +9,26 @@ Coordinate the four SeismicX skills as one seismology workflow. Route each stage
 to the narrowest capable child skill, preserve explicit artifacts between stages,
 and apply cross-stage scientific quality gates.
 
+## Agent compatibility
+
+Use this `SKILL.md` as the canonical portable entrypoint in Codex, OpenCode,
+Claude Code, or another Agent Skills client. Treat `$skill-name`,
+`/skill-name`, and a host-native skill-tool call as client-specific syntax for
+the same canonical frontmatter `name`. If the host does not expose a native
+skill tool, locate and read the selected child's `SKILL.md` directly.
+
+`AGENTS.md` and `CLAUDE.md` are compatibility entrypoints only.
+`agents/openai.yaml` adds Codex/ChatGPT UI metadata but is not required for the
+workflow.
+
 ## Dispatch map
 
 | Route | Child skill | Owns |
 |---|---|---|
-| paper | \`$seismicx-paper-skill\` | Manuscript editing, scientific argument, claim calibration, abstracts, discussions, cover letters, and reviewer responses |
-| catalog | \`$seismicx-catalog\` | Continuous-waveform inference, phase picking, association, location, magnitude, focal mechanisms, activity analysis, and final earthquake catalogs |
-| dataset | \`$seismicx-dataset\` | Waveform conversion, miniSEED indexing, label normalization, standard event or continuous HDF5, dataset indexes, and dataloaders |
-| fine-tuning | \`$seismicx-fine-tuning\` | SeismicXM/PNSN data adapters, manifests, group-safe splits, training, validation, comparison, and reproducible evaluation |
+| paper | `$seismicx-paper-skill` | Manuscript editing, scientific argument, claim calibration, abstracts, discussions, cover letters, and reviewer responses |
+| catalog | `$seismicx-catalog` | Continuous-waveform inference, phase picking, association, location, magnitude, focal mechanisms, activity analysis, and final earthquake catalogs |
+| dataset | `$seismicx-dataset` | Waveform conversion, miniSEED indexing, label normalization, standard event or continuous HDF5, dataset indexes, and dataloaders |
+| fine-tuning | `$seismicx-fine-tuning` | SeismicXM/PNSN data adapters, manifests, group-safe splits, training, validation, comparison, and reproducible evaluation |
 
 Read [references/routing.md](references/routing.md) when ownership is ambiguous.
 Read [references/pipelines.md](references/pipelines.md) whenever two or more
@@ -32,12 +44,12 @@ routes are required.
 3. Resolve every selected child skill before acting:
    - Prefer a child skill already exposed by the agent environment.
    - Otherwise run
-     \`python <this-skill>/scripts/resolve_skills.py locate --skill <route>\`.
+     `python <this-skill>/scripts/resolve_skills.py locate --skill <route>`.
    - If it is missing, report the exact repository. Install it only with user
      authorization by running
-     \`python <this-skill>/scripts/resolve_skills.py install --skill <route> --target <skill-directory>\`.
-   - Do not claim to have used a child skill when its \`SKILL.md\` was not loaded.
-4. Read the selected child's complete \`SKILL.md\`, then read only the child
+     `python <this-skill>/scripts/resolve_skills.py install --skill <route> --target <skill-directory>`.
+   - Do not claim to have used a child skill when its `SKILL.md` was not loaded.
+4. Read the selected child's complete `SKILL.md`, then read only the child
    references needed for the current stage. Treat its domain-specific operating
    rules as authoritative unless they conflict with system or user instructions.
 5. For a multi-route task, write a stage plan with an input, output, and validation

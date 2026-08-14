@@ -97,16 +97,36 @@ def unique_paths(paths: Iterable[Path]) -> list[Path]:
     return result
 
 
+def project_search_roots(start: Path | None = None) -> list[Path]:
+    """Return portable Agent Skills sources from CWD up to the Git root."""
+    current = (start or Path.cwd()).expanduser().resolve()
+    roots: list[Path] = []
+    for directory in (current, *current.parents):
+        roots.extend(
+            [
+                directory / ".agents" / "skills",
+                directory / ".opencode" / "skills",
+                directory / ".claude" / "skills",
+            ]
+        )
+        if (directory / ".git").exists():
+            break
+    return unique_paths(roots)
+
+
 def default_search_roots() -> list[Path]:
     router_dir = Path(__file__).resolve().parent.parent
-    roots = [router_dir.parent]
+    roots = [router_dir.parent, *project_search_roots()]
     codex_home = os.environ.get("CODEX_HOME")
     if codex_home:
         roots.append(Path(codex_home) / "skills")
     roots.extend(
         [
-            Path.home() / ".codex" / "skills",
             Path.home() / ".agents" / "skills",
+            Path.home() / ".config" / "opencode" / "skills",
+            Path.home() / ".claude" / "skills",
+            Path.home() / ".codex" / "skills",
+            Path("/etc/codex/skills"),
             Path.home() / ".cache" / "seismicx-skills",
         ]
     )
@@ -187,7 +207,7 @@ def command_locate(args: argparse.Namespace) -> int:
 def install_dependency(dep: Dependency, target: Path, ref: str) -> dict[str, str]:
     target = target.expanduser().resolve()
     target.mkdir(parents=True, exist_ok=True)
-    destination = target / dep.repo_dir
+    destination = target / dep.skill_name
     if destination.exists():
         existing = destination / "SKILL.md"
         if existing.is_file() and frontmatter_name(existing) == dep.skill_name:
