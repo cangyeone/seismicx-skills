@@ -1,0 +1,7 @@
+interface:
+  display_name: "SeismicX Skills Orchestrator"
+  short_description: "Route and coordinate seismology workflows"
+  default_prompt: "Use $seismicx-skills to route and coordinate this seismology task across the paper, catalog, dataset, and fine-tuning skills."
+
+policy:
+  allow_implicit_invocation: true
