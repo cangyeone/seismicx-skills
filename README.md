@@ -210,6 +210,7 @@ python scripts/resolve_skills.py install --skill all --target ~/.agents/skills
 seismicx-skills/
 ├── SKILL.md
 ├── README.md
+├── LICENSE
 ├── AGENTS.md
 ├── CLAUDE.md
 ├── agents/
@@ -224,6 +225,17 @@ seismicx-skills/
 - [路由边界](references/routing.md)处理容易混淆的任务归属。
 - [多技能流水线](references/pipelines.md)定义阶段制品、交接字段和失败处理。
 - [依赖解析器](scripts/resolve_skills.py)定位或显式安装四个上游技能。
+
+## License
+
+除非具体文件另有说明，本仓库内容采用
+[Creative Commons Attribution-NonCommercial 4.0 International](LICENSE)
+许可，SPDX 标识为 `CC-BY-NC-4.0`。允许在署名并注明修改的前提下复制、
+分享和改编，但不得用于商业目的。
+
+本许可证只适用于 `seismicx-skills` 仓库自身内容。四个上游子技能仓库、
+第三方代码、数据集、模型权重和其他外部材料继续适用各自的许可证，不因
+本调度器引用或安装它们而重新授权。
 
 ## 验证
 
