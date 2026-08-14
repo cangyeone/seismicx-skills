@@ -1,35 +1,37 @@
 # SeismicX Skills
 
-面向地震学工作的统一 Agent Skill 调度器。它根据任务目标选择并协调四个
-SeismicX 子技能，在数据、模型、目录和论文之间建立可追溯的交接流程。
+A unified Agent Skill orchestrator for seismology. It selects and coordinates
+four SeismicX child skills according to the requested deliverable, while keeping
+data, model, catalog, and manuscript handoffs explicit and traceable.
 
-The repository follows the open
+This repository follows the open
 [Agent Skills specification](https://agentskills.io/specification) and is
 designed for Codex, OpenCode, Claude Code, and other agents that can read a
 `SKILL.md` file and its relative resources.
 
-## 能力与上游技能
+## Capabilities and Upstream Skills
 
-| 任务 | 调用的技能 | 上游仓库 |
+| Task | Child skill | Upstream repository |
 |---|---|---|
-| 科学论文修改、摘要、讨论、审稿回复和主张校准 | `seismicx-paper-skill` | [seismicx-paper-skill](https://github.com/cangyeone/seismicx-paper-skill) |
-| 连续波形检测、拾取、关联、定位、震级、机制和地震目录 | `seismicx-catalog` | [seismicx-catalog-skill](https://github.com/cangyeone/seismicx-catalog-skill) |
-| 波形转换、miniSEED 索引、标签归一化、标准 HDF5 和 dataloader | `seismicx-dataset` | [seismicx-dataset-skill](https://github.com/cangyeone/seismicx-dataset-skill) |
-| SeismicXM/PNSN 数据适配、微调、验证和模型比较 | `seismicx-fine-tuning` | [seismicx-fine-tuning-skill](https://github.com/cangyeone/seismicx-fine-tuning-skill) |
+| Scientific manuscript revision, abstracts, discussions, reviewer responses, and claim calibration | `seismicx-paper-skill` | [seismicx-paper-skill](https://github.com/cangyeone/seismicx-paper-skill) |
+| Continuous-waveform detection, picking, association, location, magnitude, focal mechanisms, and earthquake catalogs | `seismicx-catalog` | [seismicx-catalog-skill](https://github.com/cangyeone/seismicx-catalog-skill) |
+| Waveform conversion, miniSEED indexing, label normalization, standard HDF5, and dataloaders | `seismicx-dataset` | [seismicx-dataset-skill](https://github.com/cangyeone/seismicx-dataset-skill) |
+| SeismicXM/PNSN data adaptation, fine-tuning, validation, and model comparison | `seismicx-fine-tuning` | [seismicx-fine-tuning-skill](https://github.com/cangyeone/seismicx-fine-tuning-skill) |
 
-统一技能不会把四个仓库复制到自身。它优先调用 Agent 已发现的子技能，
-也可以通过 `scripts/resolve_skills.py` 定位或显式安装缺失的子技能。
+The orchestrator does not vendor the four repositories. It first uses child
+skills already discovered by the active agent. It can also locate or explicitly
+install missing child skills through `scripts/resolve_skills.py`.
 
-## 调度方式
+## Routing
 
-单一任务只加载必要的技能：
+A single-purpose request loads only the necessary child skill:
 
-- “从连续 miniSEED 生成地震目录和分布图” → `catalog`
-- “把 SAC 和旧目录做成标准 HDF5” → `dataset`
-- “用区域数据微调 PNSN” → `fine-tuning`
-- “修改论文讨论并校准科学主张” → `paper`
+- “Build an earthquake catalog and event map from continuous miniSEED” → `catalog`
+- “Convert SAC and a legacy bulletin into standard HDF5” → `dataset`
+- “Fine-tune PNSN with regional data” → `fine-tuning`
+- “Revise the Discussion and calibrate its scientific claims” → `paper`
 
-跨阶段任务使用明确的中间制品和质量门槛：
+Multi-stage requests use explicit intermediate artifacts and validation gates:
 
 ```text
 raw waveforms/catalog
@@ -50,96 +52,95 @@ seismicx-paper-skill
 final scientific deliverable
 ```
 
-如果用户已经提供通过验证的中间制品，调度器会跳过相应上游阶段。
+When the user already provides a validated intermediate artifact, the
+orchestrator skips the corresponding upstream stage.
 
-## Agent 兼容性
+## Agent Compatibility
 
-`SKILL.md` 是唯一的规范工作流。其他入口只负责让不同 Agent 找到并读取它。
+`SKILL.md` is the canonical workflow. The other entrypoints only help
+different agents discover and load it.
 
-| Agent | 用户级目录 | 项目级目录 | 显式调用 |
+| Agent | User-level directory | Project-level directory | Explicit invocation |
 |---|---|---|---|
 | Codex | `~/.agents/skills/seismicx-skills/` | `.agents/skills/seismicx-skills/` | `$seismicx-skills` |
-| OpenCode | `~/.config/opencode/skills/seismicx-skills/` 或 `~/.agents/skills/seismicx-skills/` | `.opencode/skills/seismicx-skills/` 或 `.agents/skills/seismicx-skills/` | 使用 `seismicx-skills`，OpenCode V2 也可使用 `/seismicx-skills` |
+| OpenCode | `~/.config/opencode/skills/seismicx-skills/` or `~/.agents/skills/seismicx-skills/` | `.opencode/skills/seismicx-skills/` or `.agents/skills/seismicx-skills/` | Use `seismicx-skills`; OpenCode V2 also supports `/seismicx-skills` |
 | Claude Code | `~/.claude/skills/seismicx-skills/` | `.claude/skills/seismicx-skills/` | `/seismicx-skills` |
-| 其他 Agent Skills 客户端 | 客户端配置的 skills 目录 | 通常为 `.agents/skills/` | 使用技能名 `seismicx-skills` |
+| Other Agent Skills clients | The client-configured skills directory | Usually `.agents/skills/` | Use the skill name `seismicx-skills` |
 
-兼容入口：
+Compatibility entrypoints:
 
-- `SKILL.md`：开放 Agent Skills 入口和完整调度规范。
-- `AGENTS.md`：OpenCode、Codex 和支持 AGENTS 约定的仓库级 Agent 指令。
-- `CLAUDE.md`：Claude Code 仓库入口和兼容说明。
-- `agents/openai.yaml`：Codex/ChatGPT 的界面元数据和隐式调用设置；
-  其他 Agent 可以安全忽略。
+- `SKILL.md`: portable Agent Skills entrypoint and complete orchestration rules.
+- `AGENTS.md`: repository instructions for OpenCode, Codex, and agents that
+  support the AGENTS convention.
+- `CLAUDE.md`: Claude Code repository entrypoint and compatibility guidance.
+- `agents/openai.yaml`: Codex/ChatGPT UI metadata and implicit-invocation
+  settings; other agents can safely ignore it.
 
-相关官方说明：
+Official documentation:
 
 - [Codex skills](https://developers.openai.com/codex/skills)
 - [OpenCode Agent Skills](https://opencode.ai/docs/skills)
 - [Claude Code skills](https://code.claude.com/docs/en/skills)
 
-## 安装
+## Installation
 
-需要 Git 和 Python 3.10 或更高版本。保持整个仓库目录不变，
-使 `SKILL.md`、`scripts/` 和 `references/` 能通过相对路径访问。
+Git and Python 3.10 or later are required. Keep the complete repository
+directory intact so that `SKILL.md`, `scripts/`, and `references/` remain
+available through relative paths.
 
-### Codex 与 OpenCode 共用安装
+### Shared Codex and OpenCode Installation
 
-`~/.agents/skills` 同时被 Codex 和 OpenCode 发现：
+`~/.agents/skills` is discovered by both Codex and OpenCode:
 
 ```bash
 mkdir -p ~/.agents/skills
-git clone https://github.com/cangyeone/seismicx-skills.git \
-  ~/.agents/skills/seismicx-skills
-python ~/.agents/skills/seismicx-skills/scripts/resolve_skills.py \
-  install --skill all --target ~/.agents/skills
+git clone https://github.com/cangyeone/seismicx-skills.git ~/.agents/skills/seismicx-skills
+python ~/.agents/skills/seismicx-skills/scripts/resolve_skills.py install --skill all --target ~/.agents/skills
 ```
 
-### OpenCode 专用安装
+### OpenCode-Specific Installation
 
 ```bash
 mkdir -p ~/.config/opencode/skills
-git clone https://github.com/cangyeone/seismicx-skills.git \
-  ~/.config/opencode/skills/seismicx-skills
-python ~/.config/opencode/skills/seismicx-skills/scripts/resolve_skills.py \
-  install --skill all --target ~/.config/opencode/skills
+git clone https://github.com/cangyeone/seismicx-skills.git ~/.config/opencode/skills/seismicx-skills
+python ~/.config/opencode/skills/seismicx-skills/scripts/resolve_skills.py install --skill all --target ~/.config/opencode/skills
 ```
 
-确保活动 Agent 的 `skill` 权限不是 `deny`。
+Make sure the active OpenCode agent's `skill` permission is not set to
+`deny`.
 
-### Claude Code 安装
+### Claude Code Installation
 
 ```bash
 mkdir -p ~/.claude/skills
-git clone https://github.com/cangyeone/seismicx-skills.git \
-  ~/.claude/skills/seismicx-skills
-python ~/.claude/skills/seismicx-skills/scripts/resolve_skills.py \
-  install --skill all --target ~/.claude/skills
+git clone https://github.com/cangyeone/seismicx-skills.git ~/.claude/skills/seismicx-skills
+python ~/.claude/skills/seismicx-skills/scripts/resolve_skills.py install --skill all --target ~/.claude/skills
 ```
 
-如果技能目录是在当前会话启动后首次创建，重新启动 Agent 以刷新技能列表。
+Restart the agent to refresh its skill catalog if the top-level skills
+directory was created after the current session started.
 
-### 项目级安装
+### Project-Level Installation
 
-Codex 与 OpenCode 共用：
+For a shared Codex and OpenCode project installation:
 
 ```bash
 mkdir -p .agents/skills
-git clone https://github.com/cangyeone/seismicx-skills.git \
-  .agents/skills/seismicx-skills
-python .agents/skills/seismicx-skills/scripts/resolve_skills.py \
-  install --skill all --target .agents/skills
+git clone https://github.com/cangyeone/seismicx-skills.git .agents/skills/seismicx-skills
+python .agents/skills/seismicx-skills/scripts/resolve_skills.py install --skill all --target .agents/skills
 ```
 
-Claude Code 将上面的 `.agents/skills` 替换为 `.claude/skills`。
-OpenCode 也可以使用 `.opencode/skills`。
+For Claude Code, replace `.agents/skills` with `.claude/skills`. OpenCode
+can also use `.opencode/skills`.
 
-解析器把子仓库安装到与其 frontmatter `name` 一致的目录，例如
-`seismicx-catalog/`，从而保持 Agent Skills 客户端的发现和调用一致。
-它不会覆盖已有目录。
+The resolver installs every child repository under its frontmatter `name`,
+such as `seismicx-catalog/`, so Agent Skills discovery and invocation remain
+consistent even when the upstream repository name differs. Existing
+directories are never overwritten.
 
-## 使用
+## Usage
 
-Codex：
+Codex:
 
 ```text
 Use $seismicx-skills to inspect the waveform and catalog files in this project,
@@ -147,64 +148,70 @@ build a standard training dataset, fine-tune PNSN, validate it on continuous
 data, and produce a reviewed earthquake catalog.
 ```
 
-Claude Code：
+Claude Code:
 
 ```text
-/seismicx-skills 使用当前目录的连续波形、台站资料和速度模型生成地震目录。
+/seismicx-skills Use the continuous waveforms, station metadata, and velocity
+model in the current directory to produce a reviewed earthquake catalog.
 ```
 
-OpenCode 或通用 Agent：
+OpenCode or another Agent Skills client:
 
 ```text
 Use the seismicx-skills skill to route this seismology task and validate every
 artifact before passing it to the next stage.
 ```
 
-自然语言触发同样有效，例如：
+Natural-language activation also works:
 
 ```text
-我有 SAC 波形、旧震相目录和 StationXML。先建立标准数据集，微调 PNSN，
-再在一个月连续波形上生成候选地震目录，最后根据验证结果修改论文。
+I have SAC waveforms, a legacy phase bulletin, and StationXML. Build a standard
+dataset, fine-tune PNSN, produce a candidate catalog from one month of
+continuous data, and revise the manuscript using the validated results.
 ```
 
-## 依赖管理
+## Dependency Management
 
-只检查，不修改文件：
+Inspect installed child skills without changing files:
 
 ```bash
 python scripts/resolve_skills.py status
 python scripts/resolve_skills.py locate --skill catalog
 ```
 
-安装一个或全部子技能：
+Install one or all child skills:
 
 ```bash
 python scripts/resolve_skills.py install --skill dataset --target ~/.agents/skills
 python scripts/resolve_skills.py install --skill all --target ~/.agents/skills
 ```
 
-可用路由为 `paper`、`catalog`、`dataset`、`fine-tuning` 和
-`all`。也可以通过 `--search-root` 添加 Agent 的自定义技能目录。
+Available route names are `paper`, `catalog`, `dataset`,
+`fine-tuning`, and `all`. Use `--search-root` to add a custom skill
+directory configured by another agent.
 
-解析器会搜索：
+The resolver searches:
 
-- 当前项目向上到 Git 根目录中的 `.agents/skills`、
-  `.opencode/skills` 和 `.claude/skills`；
-- `~/.agents/skills`、`~/.config/opencode/skills`、
-  `~/.claude/skills` 和兼容的旧 Codex 目录；
-- 调度器自身的同级目录及显式 `--search-root`。
+- `.agents/skills`, `.opencode/skills`, and `.claude/skills` from the
+  current directory up to the Git repository root;
+- `~/.agents/skills`, `~/.config/opencode/skills`,
+  `~/.claude/skills`, and the compatible legacy Codex directory;
+- directories beside the orchestrator and explicit `--search-root` values.
 
-## 科学与数据安全
+## Scientific and Data Safety
 
-- 原始波形、目录、模型权重和论文源文件保持只读。
-- 不自动下载大规模或多 TB 数据集。
-- 不把 smoke test 描述成生产结果。
-- 不把窗口级模型精度描述成连续监测性能。
-- 不把未通过定位、震级或台网覆盖 QC 的结果当作最终目录。
-- 论文阶段只能使用已提供或已验证的证据，不能生成缺失结果或引用。
-- 未经用户明确要求，不上传或提交数据、目录、权重、实验输出或论文。
+- Keep source waveforms, catalogs, model checkpoints, and manuscripts unchanged.
+- Do not automatically download large or multi-terabyte datasets.
+- Never describe a smoke test as a production result.
+- Never present window-level model accuracy as continuous-monitoring performance.
+- Do not treat events that fail location, magnitude, or station-coverage QC as
+  a final earthquake catalog.
+- Use only supplied or validated evidence during manuscript work; do not invent
+  missing results or citations.
+- Do not upload or commit data, catalogs, weights, experiment outputs, or
+  manuscripts unless the user explicitly requests it.
 
-## 仓库结构
+## Repository Structure
 
 ```text
 seismicx-skills/
@@ -222,22 +229,32 @@ seismicx-skills/
     └── resolve_skills.py
 ```
 
-- [路由边界](references/routing.md)处理容易混淆的任务归属。
-- [多技能流水线](references/pipelines.md)定义阶段制品、交接字段和失败处理。
-- [依赖解析器](scripts/resolve_skills.py)定位或显式安装四个上游技能。
+- [Routing boundaries](references/routing.md) resolve ambiguous task ownership.
+- [Multi-skill pipelines](references/pipelines.md) define stage artifacts,
+  handoff fields, validation gates, and failure handling.
+- [Dependency resolver](scripts/resolve_skills.py) locates or explicitly
+  installs the four upstream skills.
 
 ## License
 
-除非具体文件另有说明，本仓库内容采用
-[Creative Commons Attribution-NonCommercial 4.0 International](LICENSE)
-许可，SPDX 标识为 `CC-BY-NC-4.0`。允许在署名并注明修改的前提下复制、
-分享和改编，但不得用于商业目的。
+Unless otherwise noted, the contents of this repository are licensed under the
+[Creative Commons Attribution-NonCommercial 4.0 International License](LICENSE),
+SPDX identifier `CC-BY-NC-4.0`. The material may be copied, shared, and
+adapted with attribution and an indication of changes, but it may not be used
+for commercial purposes.
 
-本许可证只适用于 `seismicx-skills` 仓库自身内容。四个上游子技能仓库、
-第三方代码、数据集、模型权重和其他外部材料继续适用各自的许可证，不因
-本调度器引用或安装它们而重新授权。
+This license applies only to the contents of the `seismicx-skills`
+repository. The four upstream child-skill repositories, third-party code,
+datasets, model weights, and other external materials remain under their own
+licenses and are not relicensed by this orchestrator.
 
-## 验证
+## Maintainers
+
+- Xin Liu（刘鑫）: [xinliu_geo@outlook.com](mailto:xinliu_geo@outlook.com)
+- Yuqi Cai（蔡育埼）: [caiyuqiming@foxmail.com](mailto:caiyuqiming@foxmail.com)
+- Ziye Yu（于子叶）: [yuziye@hotmail.com](mailto:yuziye@hotmail.com)
+
+## Validation
 
 ```bash
 python -m py_compile scripts/resolve_skills.py
